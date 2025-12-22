@@ -1,0 +1,5 @@
+{
+  "name": "Linkora | Intelligent App Builder",
+  "description": "Interactive multi-section app builder that allows real-time configuration of themes, layouts, and workflows, exporting configurations as JSON.",
+  "requestFramePermissions": []
+}
