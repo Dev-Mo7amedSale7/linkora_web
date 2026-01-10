@@ -102,30 +102,33 @@ export const AppBuilder: React.FC<AppBuilderProps> = ({ user }) => {
     offers
   };
 
-  const handlePublish = async () => {
-    setIsPublishing(true);
-    try {
-      await fetch(`${API_BASE_URL}/apps`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, name: appName }),
-      });
 
-      const response = await fetch(`${API_BASE_URL}/config`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ appId: currentAppId, config: currentConfig }),
-      });
-      if (response.ok) {
-        setPublishSuccess(true);
-        setTimeout(() => setPublishSuccess(false), 3000);
-      }
-    } catch (err) {
+const handlePublish = async () => {
+  setIsPublishing(true);
+  try {
+    const response = await fetch(`${API_BASE_URL}/config`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id, config: currentConfig }),
+    });
+
+    if (response.ok) {
+      setPublishSuccess(true);
+      setTimeout(() => setPublishSuccess(false), 3000);
+    } else {
+      const errorData = await response.json();
+      console.error("Publish error:", errorData);
       alert("Publish failed.");
-    } finally {
-      setIsPublishing(false);
     }
-  };
+  } catch (err) {
+    console.error(err);
+    alert("Publish failed.");
+  } finally {
+    setIsPublishing(false);
+  }
+};
+
+
 
   const handleCreateCollection = async () => {
     if (!newCollName) return;
