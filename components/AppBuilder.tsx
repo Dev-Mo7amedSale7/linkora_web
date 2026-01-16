@@ -130,31 +130,30 @@ const handlePublish = async () => {
 
 
 
-  const handleCreateCollection = async () => {
-    if (!newCollName) return;
+const handleCreateCollection = () => {
+  if (!newCollName) return;
 
-    if (editingCollectionId) {
-      setCollections(collections.map(c => c.id === editingCollectionId ? { ...c, name: newCollName } : c));
-      setEditingCollectionId(null);
-      setNewCollName("");
-      setShowCollForm(false);
-      return;
-    }
+  if (editingCollectionId) {
+    // تعديل مجموعة موجودة
+    setCollections(collections.map(c => 
+      c.id === editingCollectionId ? { ...c, name: newCollName } : c
+    ));
+    setEditingCollectionId(null);
+  } else {
+    // إضافة مجموعة جديدة
+    const newId = `c_${Date.now()}`; // توليد id محلي
+    const newColl: Collection = {
+      id: newId,
+      name: newCollName,
+      products: []
+    };
+    setCollections([...collections, newColl]);
+  }
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/collections`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ appId: currentAppId, name: newCollName }),
-      });
-      const data = await response.json();
-      setCollections([...collections, { id: data.id, name: newCollName, products: [] }]);
-      setNewCollName("");
-      setShowCollForm(false);
-    } catch (err) {
-      alert("Error saving collection.");
-    }
-  };
+  setNewCollName("");
+  setShowCollForm(false);
+};
+
 
   const handleDeleteCollection = (id: string) => {
     if (window.confirm("Are you sure you want to delete this collection and all its products?")) {
@@ -168,69 +167,40 @@ const handlePublish = async () => {
     setShowCollForm(true);
   };
 
-  const handleSaveProduct = async () => {
-    if (!activeCollectionId) return;
-    const numericPrice = parseFloat(newProd.price.replace(/[^0-9.]/g, '')) || 0;
-    
-    if (editingProductId) {
-      const updated = collections.map(c => {
-        if (c.id === activeCollectionId) {
-          return {
-            ...c,
-            products: c.products.map(p => p.id === editingProductId ? {
-              ...p,
-              name: newProd.name,
-              price: `$${numericPrice}`,
-              image: newProd.image,
-              description: newProd.description
-            } : p)
-          };
-        }
-        return c;
-      });
-      setCollections(updated);
-      setEditingProductId(null);
-      setNewProd({ name: '', price: '', image: '', description: '' });
-      setShowProdForm(false);
-      return;
+  const handleSaveProduct = () => {
+  if (!activeCollectionId) return;
+
+  const numericPrice = parseFloat(newProd.price.replace(/[^0-9.]/g, '')) || 0;
+
+  setCollections(collections.map(c => {
+    if (c.id === activeCollectionId) {
+      // تعديل إذا موجود
+      if (editingProductId) {
+        return {
+          ...c,
+          products: c.products.map(p =>
+            p.id === editingProductId
+              ? { ...p, ...newProd, price: `$${numericPrice}` }
+              : p
+          )
+        };
+      } else {
+        // إضافة جديد
+        const newId = `p_${Date.now()}`;
+        return {
+          ...c,
+          products: [...c.products, { id: newId, ...newProd, price: `$${numericPrice}` }]
+        };
+      }
     }
+    return c;
+  }));
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/products`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          collectionId: activeCollectionId, 
-          name: newProd.name,
-          description: newProd.description,
-          price: numericPrice,
-          image: newProd.image
-        }),
-      });
-      const data = await response.json();
-      
-      const productData: Product = {
-        id: data.id,
-        name: newProd.name,
-        price: `$${numericPrice}`,
-        image: newProd.image,
-        description: newProd.description
-      };
+  setNewProd({ name: '', price: '', image: '', description: '' });
+  setEditingProductId(null);
+  setShowProdForm(false);
+};
 
-      const updated = collections.map(c => {
-        if (c.id === activeCollectionId) {
-          return { ...c, products: [...c.products, productData] };
-        }
-        return c;
-      });
-
-      setCollections(updated);
-      setNewProd({ name: '', price: '', image: '', description: '' });
-      setShowProdForm(false);
-    } catch (err) {
-      alert("Error saving product.");
-    }
-  };
 
   const handleDeleteProduct = (prodId: string) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
