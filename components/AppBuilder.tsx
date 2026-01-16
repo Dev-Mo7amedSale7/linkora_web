@@ -63,30 +63,29 @@ export const AppBuilder: React.FC<AppBuilderProps> = ({ user }) => {
   const [editingOfferId, setEditingOfferId] = useState<string | null>(null);
   const [newOffer, setNewOffer] = useState({ title: '', discount: '', code: '', description: '' });
 
-  useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/config/${currentAppId}`);
-        const data = await response.json();
-        if (data) {
-          setAppName(data.name);
-          setSelectedPalette(ECOM_PALETTES.find(p => p.primary === data.theme.primary) || ECOM_PALETTES[0]);
-          setCardStyle(data.layout.card);
-          setNavStyle(data.layout.navigation);
-          setHeaderStyle(data.layout.header);
-          setRadius(data.theme.radius);
-          setFont(data.theme.font);
-          setSelectedTabs(data.navigation);
-          setCollections(data.collections || []);
-          setOffers(data.offers || []);
-          setPaymentMethods(data.payment?.methods || [PaymentMethod.STRIPE, PaymentMethod.CASH]);
-        }
-      } catch (err) {
-        console.warn("Initial load: No config found for this user.");
+const [config, setConfig] = useState<AppConfig | null>(null);
+const [version, setVersion] = useState<number | null>(null);
+
+useEffect(() => {
+  const fetchConfig = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/config/${user.id}`);
+      const data = await res.json();
+
+      if (data && data.version !== version) {
+        setConfig(data.config);
+        setVersion(data.version);
+      } else {
+        console.log("No new config or same version");
       }
-    };
-    fetchConfig();
-  }, [currentAppId]);
+    } catch (err) {
+      console.error("Failed to fetch config", err);
+    }
+  };
+
+  fetchConfig();
+}, []);
+
 
   const currentConfig: AppConfig = {
     id: `LK_${user.id.substring(0, 4).toUpperCase()}`,
