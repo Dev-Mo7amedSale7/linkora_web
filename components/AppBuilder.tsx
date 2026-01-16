@@ -69,22 +69,31 @@ const [version, setVersion] = useState<number | null>(null);
 useEffect(() => {
   const fetchConfig = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/config/${user.id}`);
-      const data = await res.json();
+      const response = await fetch(`${API_BASE_URL}/config/${currentAppId}`);
+      const data = await response.json();
 
-      if (data && data.version !== version) {
-        setConfig(data.config);
-        setVersion(data.version);
-      } else {
-        console.log("No new config or same version");
+      if (data && data.config) {
+        setAppName(data.config.name);
+        setSelectedPalette(ECOM_PALETTES.find(p => p.primary === data.config.theme.primary) || ECOM_PALETTES[0]);
+        setCardStyle(data.config.layout.card);
+        setNavStyle(data.config.layout.navigation);
+        setHeaderStyle(data.config.layout.header);
+        setRadius(data.config.theme.radius);
+        setFont(data.config.theme.font);
+        setSelectedTabs(data.config.navigation);
+        setCollections(data.config.collections || []);
+        setOffers(data.config.offers || []);
+        setPaymentMethods(data.config.payment?.methods || [PaymentMethod.STRIPE, PaymentMethod.CASH]);
+        setVersion(data.version); // لو حابب تستخدم version
       }
     } catch (err) {
-      console.error("Failed to fetch config", err);
+      console.warn("Initial load: No config found for this user.");
     }
   };
 
   fetchConfig();
-}, []);
+}, [currentAppId]);
+
 
 
   const currentConfig: AppConfig = {
