@@ -1,24 +1,74 @@
 
 import React from 'react';
 
-// Tab types used for the Linkora Studio configuration UI
-export enum TabType {
-  PROFILE = 'PROFILE',
-  CART = 'CART',
-  STORE = 'STORE'
+// Base types
+export interface BaseEntity {
+  id: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-// Navigation screens for the SaaS app preview simulator
-export enum NextScreen {
-  HOME = 'HOME',
-  CATEGORIES = 'CATEGORIES',
-  OFFERS = 'OFFERS',
-  CART = 'CART',
-  ORDERS = 'ORDERS',
-  PROFILE = 'PROFILE'
+// Client (Admin) types
+export interface Client extends BaseEntity {
+  name: string;
+  email: string;
+  password?: string;
+  apps?: App[];
 }
 
-// Layout styles for product cards in the app simulator
+// App types
+export interface App extends BaseEntity {
+  name: string;
+  clientId: string;
+  version: string;
+  config: Record<string, any>;
+  users?: AppUser[];
+  collections?: Collection[];
+}
+
+// App User types
+export interface AppUser extends BaseEntity {
+  name: string;
+  email: string;
+  password?: string;
+  role: 'admin' | 'user';
+  appId: string;
+  orders?: Order[];
+}
+
+// Collection types
+export interface Collection extends BaseEntity {
+  name: string;
+  appId: string;
+  products?: Product[];
+}
+
+// Product types
+export interface Product extends BaseEntity {
+  name: string;
+  description: string;
+  price: number;
+  collectionId: string;
+  imageUrl?: string;
+}
+
+// Order types
+export interface OrderItem {
+  productId: string;
+  quantity: number;
+  price: number;
+  name: string;
+}
+
+export interface Order extends BaseEntity {
+  appUserId: string;
+  appId: string;
+  products: OrderItem[];
+  totalPrice: number;
+  status?: 'pending' | 'processing' | 'completed' | 'cancelled';
+}
+
+// UI Configuration types
 export enum ProductCardStyle {
   GRID = 'GRID',
   LIST = 'LIST',
@@ -26,7 +76,6 @@ export enum ProductCardStyle {
   GLASS = 'GLASS'
 }
 
-// Navigation bar styles for the app simulator
 export enum NavigationBarStyle {
   CLASSIC = 'CLASSIC',
   FLOATING = 'FLOATING',
@@ -34,7 +83,6 @@ export enum NavigationBarStyle {
   MINIMAL = 'MINIMAL'
 }
 
-// Header styles for the app simulator
 export enum HeaderStyle {
   CLASSIC = 'CLASSIC',
   MODERN = 'MODERN',
@@ -42,7 +90,6 @@ export enum HeaderStyle {
   BOLD = 'BOLD'
 }
 
-// Supported payment method options
 export enum PaymentMethod {
   STRIPE = 'STRIPE',
   PAYPAL = 'PAYPAL',
@@ -54,7 +101,8 @@ export enum BorderRadius {
   NONE = '0px',
   SMALL = '0.5rem',
   MEDIUM = '1rem',
-  LARGE = '2rem'
+  LARGE = '1.5rem',
+  FULL = '9999px'
 }
 
 // Font family options for theme customization
@@ -73,8 +121,7 @@ export interface TabConfig {
 }
 
 // Product data structure for the inventory section
-export interface Product {
-  id: string;
+export interface InventoryProduct extends BaseEntity {
   name: string;
   description: string;
   price: string;
@@ -92,15 +139,13 @@ export interface Offer {
 }
 
 // Collection of products for categorization
-export interface Collection {
-  id: string;
+export interface InventoryCollection extends BaseEntity {
   name: string;
-  products: Product[];
+  products: InventoryProduct[];
 }
 
 // User account structure for the Auth system
-export interface User {
-  id: string;
+export interface User extends BaseEntity {
   name: string;
   email: string;
   password?: string;
@@ -149,4 +194,14 @@ export interface SectionItem {
   description: string;
   icon: string;
   tabs: TabItem[];
+}
+
+// Next screen navigation for app flow
+export enum NextScreen {
+  HOME = 'HOME',
+  CATEGORIES = 'CATEGORIES',
+  OFFERS = 'OFFERS',
+  CART = 'CART',
+  ORDERS = 'ORDERS',
+  PROFILE = 'PROFILE'
 }
