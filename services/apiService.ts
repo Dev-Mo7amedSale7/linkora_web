@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'http://127.0.0.1:5001/api';
 
 // Client Auth
 export const clientSignup = async (name: string, email: string, password: string) => {
